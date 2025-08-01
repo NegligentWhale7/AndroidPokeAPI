@@ -3,8 +3,10 @@ package com.solera.pokemon
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 
 class Adapter(private val characters: List<Characters>):RecyclerView.Adapter<Adapter.ViewHolder> (){
 
@@ -13,6 +15,7 @@ class Adapter(private val characters: List<Characters>):RecyclerView.Adapter<Ada
     class ViewHolder(view:View): RecyclerView.ViewHolder(view){
         val name : TextView = view.findViewById(R.id.tvName)
         val url : TextView = view.findViewById(R.id.tvUrl)
+        val sprite: ImageView = view.findViewById(R.id.imgPokemon)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -25,6 +28,11 @@ class Adapter(private val characters: List<Characters>):RecyclerView.Adapter<Ada
         val character = filtered[position]
         holder.name.text = character.name
         holder.url.text = character.url
+
+        //Sprite
+        Glide.with(holder.itemView.context)
+            .load(character.spriteUrl)
+            .into(holder.sprite)
     }
 
     override fun getItemCount(): Int = filtered.size

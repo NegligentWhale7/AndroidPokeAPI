@@ -1,6 +1,7 @@
 package com.solera.pokemon
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -45,10 +46,32 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful){
                     val characters = response.body()?.results ?: emptyList()
-                    adapter = Adapter(characters)
-                    binding.rvPokemon.layoutManager = LinearLayoutManager(this@MainActivity)
-                    binding.rvPokemon.adapter = adapter
-                    setupSearchView()
+
+                    var remaining = characters.size
+                    for (character in characters){
+                        RetrofitClient.service.getPokemonSprite(character.url).enqueue(object: Callback<PokemonSpriteResponse>{
+                            override fun onResponse(
+                                call: Call<PokemonSpriteResponse>,
+                                response: Response<PokemonSpriteResponse>
+                            ) {
+                                Log.d("MainActivity", "Sprite URL: ${response.body()}")
+                                val spriteUrl = response.body()?.sprites?.front_default
+                                character.spriteUrl = spriteUrl
+                                remaining--
+                                if (remaining <= 0) {
+                                    adapter = Adapter(characters)
+                                    binding.rvPokemon.layoutManager = LinearLayoutManager(this@MainActivity)
+                                    binding.rvPokemon.adapter = adapter
+                                    setupSearchView()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<PokemonSpriteResponse>, t: Throwable) {
+                                Toast.makeText(this@MainActivity, "Error al obtener el sprite", Toast.LENGTH_LONG).show()
+                            }
+
+                        })
+                    }
                 }
             }
 
